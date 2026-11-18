@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Kuku AI Generalist Assignment — Problem 2 Solution Document</title>
+  <style>
+    @page { size: A4; margin: 14mm 16mm; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-size: 9.5pt;
+      line-height: 1.42;
+      color: #111827;
+      margin: 0;
+      padding: 0;
+    }
+    h1 { font-size: 16pt; color: #1e3a8a; margin-bottom: 2px; }
+    .subtitle { font-size: 9.5pt; color: #4b5563; margin-bottom: 12px; font-weight: 500; }
+    h2 { font-size: 11.5pt; color: #1e3a8a; border-bottom: 1.5px solid #e5e7eb; padding-bottom: 2px; margin-top: 12px; margin-bottom: 5px; }
+    h3 { font-size: 10pt; color: #1f2937; margin-top: 6px; margin-bottom: 3px; }
+    p { margin-bottom: 5px; text-align: justify; }
+    ul, ol { margin-left: 16px; margin-bottom: 5px; }
+    li { margin-bottom: 2px; }
+    table { width: 100%; border-collapse: collapse; margin: 6px 0; font-size: 8.5pt; }
+    th, td { border: 1px solid #d1d5db; padding: 5px 7px; text-align: left; }
+    th { background: #f3f4f6; color: #111827; font-weight: 600; }
+    code { font-family: ui-monospace, Menlo, Monaco, Consolas, monospace; font-size: 8pt; background: #f3f4f6; padding: 1px 4px; border-radius: 3px; }
+    pre { background: #f8fafc; border: 1px solid #e2e8f0; padding: 6px 10px; border-radius: 4px; font-size: 8pt; margin: 5px 0; }
+    .highlight-box { background: #eff6ff; border-left: 3px solid #3b82f6; padding: 5px 8px; margin: 5px 0; font-size: 8.5pt; }
+  </style>
+</head>
+<body>
+
+  <h1>Kuku — AI Generalist Assignment: Solution Document</h1>
+  <div class="subtitle">
+    <strong>Problem 2: Build an AI Lawyer</strong> • Project: <em>Nyay (न्याय) — Everyday Legal Companion for India</em><br>
+    <strong>Engine:</strong> Google Gemini (<code>gemini-flash-latest</code>) + Grounded Indian Statutory KB • Zero External Pip Packages Required
+  </div>
+
+  <h2>1. Problem Choice, Framing & Scope</h2>
+  <p>
+    <strong>Why Problem 2:</strong> In India, everyday legal violations—withheld rental deposits (₹40,000–₹1,00,000), unpaid wages in startups/SMEs, refused refunds for defective goods, and unpaid informal loans—affect millions of citizens. Engaging an advocate requires upfront retainers of ₹15,000–₹50,000, making formal legal recourse economically irrational for claims under ₹2,00,000. People surrender because the <em>transaction friction of accessing justice exceeds the financial claim</em>. <em>Nyay</em> democratizes legal literacy, structured case diagnosis, and actionable dispute resolution for Bharat.
+  </p>
+  <p>
+    <strong>Scoping Strategy (Depth over Vanity Breadth):</strong> Rather than hallucinating across 1,200+ Indian statutes, <em>Nyay</em> focuses on high-frequency, actionable civil and consumer disputes:
+  </p>
+  <ul>
+    <li><strong>Tenancy Disputes:</strong> Unlawful deposit deductions (<em>Transfer of Property Act, 1882, Sec 108(q)</em>).</li>
+    <li><strong>Wage Theft & Employment:</strong> Unpaid salary arrears (<em>Payment of Wages Act, 1936, Sec 5 & 15</em>).</li>
+    <li><strong>Consumer & E-Commerce Grievances:</strong> Defective products & refund denials (<em>Consumer Protection Act, 2019; E-Commerce Rules, 2020</em>).</li>
+    <li><strong>Friendly Loans & Debt Recovery:</strong> Personal loans without stamp paper (<em>Indian Contract Act, 1872, Sec 73</em>; <em>Order 37 CPC Summary Suits</em>; <em>Limitation Act, 1963</em>).</li>
+    <li><strong>Notice Period Rebuttals:</strong> Defending unfair employer buyout demands (<em>Code of Civil Procedure, 1908</em>).</li>
+  </ul>
+  <p>
+    <strong>Key Assumptions:</strong> (1) The user explains their issue in colloquial Hinglish or informal English. (2) Zero-hallucination tolerance: fake section citations destroy user credibility. (3) Actionability over commentary: users need immediate procedural leverage (a formal 15-day statutory legal notice or District Commission petition), not just abstract advice. (4) Strict safety: criminal or custodial queries are safely declined and redirected to DLSA / NALSA Helpline (15100).
+  </p>
+
+  <h2>2. Engineering Architecture: AI vs. Deterministic Code</h2>
+  <table>
+    <thead>
+      <tr>
+        <th style="width: 25%;">Component</th>
+        <th style="width: 25%;">Implementation</th>
+        <th style="width: 50%;">Engineering Rationale</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>Story Understanding</strong></td>
+        <td>Google Gemini (Flash tier)</td>
+        <td>Extracts chronology, monetary loss, parties, and emotional nuance from colloquial vernacular narratives.</td>
+      </tr>
+      <tr>
+        <td><strong>Statutory Grounding</strong></td>
+        <td><strong>Deterministic Code (KB)</strong></td>
+        <td><strong>Eliminates Hallucination.</strong> Cites only verified acts, sections, time-limits, and commission jurisdictions curated in <code>legal_knowledge.py</code>.</td>
+      </tr>
+      <tr>
+        <td><strong>Legal Drafting</strong></td>
+        <td><strong>Algorithmic Templates</strong></td>
+        <td>Produces strict procedural notices and Sec 35 Consumer Complaints conforming to Indian court formatting and Indian numbering (₹1,00,000).</td>
+      </tr>
+      <tr>
+        <td><strong>Opponent Rehearsal</strong></td>
+        <td>LLM Roleplayer</td>
+        <td>Prepares users for inevitable pushback (e.g. landlord claiming painting costs, debtor claiming no stamp paper) with practical rebuttal tips.</td>
+      </tr>
+      <tr>
+        <td><strong>Safety Gate</strong></td>
+        <td><strong>Deterministic Filter</strong></td>
+        <td>Intercepts criminal/police/custodial matters immediately and routes to free legal aid (NALSA 15100 / DLSA).</td>
+      </tr>
+      <tr>
+        <td><strong>Offline Resilience</strong></td>
+        <td>Zero-Dependency Fallback</td>
+        <td>Gracefully falls back to deterministic statutory advice if network or API limits fail.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h2>3. The 5-Stage Conversational Pipeline</h2>
+  <pre>
+[User Story (Text/Hinglish)] ──► [Safety Boundary Guard] ──► [Domain Diagnosis & Fact Extraction]
+                                          │                                │
+                                          ▼ (If Criminal)                  ▼
+                               [NALSA 15100 Referral]       [Grounding via Statutory Knowledge Base]
+                                                                           │
+                                                                           ▼
+[Argument Rehearsal Drill] ◄── [Deterministic Document Drafting] ◄── [Plain-Language Gemini Legal Counsel]
+  </pre>
+
+  <h2>4. Scale, Unit Economics & Real-World Cost</h2>
+  <ul>
+    <li><strong>Hybrid Cost Structure:</strong> Local deterministic categorization and statute retrieval cost <strong>₹0.00</strong>. Vernacular explanation and dialogue run on Google Gemini (Flash tier). Total cost per full consultation + drafted notice: <strong>~₹0.15 to ₹0.30 ($0.002 to $0.004)</strong>.</li>
+    <li><strong>Zero External Dependencies:</strong> Runs entirely on standard Python 3.10+ (<code>http.server</code>, <code>urllib.request</code>). Zero pip packages required to deploy or evaluate.</li>
+    <li><strong>Human-in-the-Loop Tiering:</strong> Small claims (&lt; ₹2,00,000) are resolved with self-help notices; contested litigation can escalate to empanelled pro-bono / legal aid advocates.</li>
+  </ul>
+
+  <h2>5. Evaluation & Test Suite (6 Benchmark Scenarios)</h2>
+  <p>Evaluated across 6 realistic Indian dispute scenarios with unedited outputs preserved in <code>raw_outputs/</code>:</p>
+  <ul>
+    <li><strong>TC-01 (Deposit Dispute - Bengaluru):</strong> Enforces <em>Transfer of Property Act Sec 108(q)</em>; generates 15-day notice to landlord.</li>
+    <li><strong>TC-02 (Wage Theft - Noida Startup):</strong> Cites <em>Payment of Wages Act Sec 5 & 15</em>; dismantles startup's funding delay excuse.</li>
+    <li><strong>TC-03 (E-Commerce Defective Device):</strong> Rebuts intermediary defense under <em>E-Commerce Rules 2020</em>; drafts Sec 35 Consumer Complaint.</li>
+    <li><strong>TC-04 (Notice Buyout Rebuttal):</strong> Formulates structured <em>Without Prejudice</em> reply adjusting notice against earned leaves.</li>
+    <li><strong>TC-05 (Police Harassment Boundary Test):</strong> Safely refuses criminal advice and supplies NALSA 15100 helpline + free legal aid.</li>
+    <li><strong>TC-06 (Personal Loan Recovery):</strong> Grounds informal loans under <em>Contract Act Sec 73</em>, explains 3-year limitation, drafts Order 37 CPC summary notice.</li>
+  </ul>
+  <p><strong>Automated Tests:</strong> 28 test cases in <code>test_cases.py</code> covering knowledge retrieval, legal categorization, and document generation.</p>
+
+  <h2>6. How to Run & Verify</h2>
+  <pre>
+# 1. Start Local Web Prototype (Interactive UI)
+python web_app.py      # Open http://localhost:8000 in your browser
+
+# 2. Run Interactive Terminal AI Lawyer
+python ai_lawyer.py
+
+# 3. Run Automated Test Suite (28 Tests)
+python test_cases.py
+
+# 4. View / Regenerate 6 Benchmark Raw Outputs
+python generate_raw_outputs.py
+  </pre>
+  <div class="highlight-box">
+    <strong>Self-Contained Evaluation:</strong> In lieu of a video walkthrough, the prototype includes an interactive Web UI (with 6 one-click test scenarios), an interactive CLI, automated test suites, and 6 unedited benchmark raw outputs in <code>raw_outputs/</code>.
+  </div>
+
+</body>
+</html>
